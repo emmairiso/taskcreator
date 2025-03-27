@@ -10,3 +10,7 @@ class User(db.Model):
     email = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String, nullable=False, unique=True)
     tasks = relationship('Task', back_populates='user', cascade = "all, delete-orphan")
+
+def create_user(email, password):
+    new_user = User(email=email, password=password)
+    db.session.add(new_user)
