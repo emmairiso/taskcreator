@@ -8,6 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
+
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
@@ -66,25 +67,46 @@ def login():
 
 @app.route("/dashboard", methods=["POST", "GET"])
 def dashboard(): 
-    return render_template("dashboard.html")
+        if request.method == "POST":
+            title = request.form.get("title")
+            description = request.form.get("description")
+            first_date = request.form.get("due_date")
+            try:
+                due_date_obj = datetime.strptime(first_date, "%Y-%m-%d").date() if first_date else None
+                new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj)
+                db.session.add(new_task)
+                db.session.commit()
+                return redirect("/dashboard")
+            except Exception as e:
+                db.session.rollback()
+                return f"There was an error: {e}"
+        user_tasks = Task.query.filter_by(user_id=current_user.id).all()
+        return render_template("dashboard.html", tasks=user_tasks)
+
 
 @app.route("/add_task", methods=["POST", "GET"])
 def add_task():
-    if request.method == "POST":
-        title = request.form.get("title")
-        description = request.form.get("description")
-        due_date = request.form.get("due_date")
-        try:
-            due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date() if due_date else None
-            new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj)
-            db.session.add(new_task)
-            db.session.commit()
-            return redirect("/dashboard")
-        except Exception as e:
-            db.session.rollback()
-            return f"There was an error: {e}"
+    #if request.method == "POST":
+        #title = request.form.get("title")
+        #description = request.form.get("description")
+        #due_date = request.form.get("due_date")
+        #try:
+            #due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date() if due_date else None
+            #new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj)
+            #db.session.add(new_task)
+            #db.session.commit()
+            #return redirect("/dashboard")
+        #except Exception as e:
+            #db.session.rollback()
+            #return f"There was an error: {e}"
     return render_template("add_task.html")
 
+@app.after_request
+def add_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 if __name__ in "__main__":
     with app.app_context():

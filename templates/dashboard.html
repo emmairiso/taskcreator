@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>You are logged in! Welcome! </h1>
-        <p>Welcome! You can:</p>
+        <p>Welcome, {{ current_user.email }}! You can:</p>
         <a href="/add_task">
             <button>Add Task</button><br>
         </a>
@@ -15,6 +15,26 @@
             <button>Edit Task</button><br>
         </a>
         <button>Delete Task</button><br>
+    
+    {% if tasks %}
+        <h2>Your Tasks</h2>
+        <table border="1">
+            <tr>
+                <th>Task</th>
+                <th>Description</th>
+                <th>Due Date</th>
+            </tr>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.title }}</td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.due_date }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>You have no tasks. <a href="/add_task">Add your first task!</a></p>
+    {% endif %}
         
 
     
