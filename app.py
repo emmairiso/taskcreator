@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, request
 from storage.database import db
 from models import task, user
+from models.user import User
 from models.user import create_user
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -48,6 +49,16 @@ def sign():
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        current_user = User.query.filter_by(email=email).first()
+
+        if current_user and check_password_hash(current_user.password, password):
+            #login_user(current_user)
+            return redirect("/")
+        else:
+            return "Login failed"
     return render_template("login.html")
 
 if __name__ in "__main__":
