@@ -2,9 +2,11 @@ from flask import Flask, render_template, redirect, request
 from storage.database import db
 from models import task, user
 from models.user import User
+from models.task import Task
 from models.user import create_user
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
@@ -22,7 +24,7 @@ def create_tables():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return user.query.get(user_id)
+    return User.query.get(user_id)
 
 
 
@@ -55,11 +57,42 @@ def login():
         current_user = User.query.filter_by(email=email).first()
 
         if current_user and check_password_hash(current_user.password, password):
-            #login_user(current_user)
-            return redirect("/")
+            login_user(current_user)
+            return redirect("/dashboard")
         else:
             return "Login failed"
     return render_template("login.html")
+
+@app.route("/dashboard", methods=["POST", "GET"])
+def dashboard(): 
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        try:
+            new_task = Task(title=title, description=description, user_id=current_user.id)
+            db.session.add(new_task)
+            db.session.commit()
+            return redirect("/dashboard")
+        except Exception as e:
+            db.session.rollback()
+            return f"There was an error: {e}"
+    return render_template("dashboard.html")
+
+@app.route("/add_task", methods=["POST", "GET"])
+def add_task():
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        try:
+            new_task = Task(title=title, description=description, user_id=current_user.id)
+            db.session.add(new_task)
+            db.session.commit()
+            return redirect("/dashboard")
+        except Exception as e:
+            db.session.rollback()
+            return f"There was an error: {e}"
+    return render_template("add_task.html")
+
 
 if __name__ in "__main__":
     with app.app_context():
