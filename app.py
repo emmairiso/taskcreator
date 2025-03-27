@@ -6,6 +6,7 @@ from models.task import Task
 from models.user import create_user
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -65,17 +66,6 @@ def login():
 
 @app.route("/dashboard", methods=["POST", "GET"])
 def dashboard(): 
-    if request.method == "POST":
-        title = request.form.get("title")
-        description = request.form.get("description")
-        try:
-            new_task = Task(title=title, description=description, user_id=current_user.id)
-            db.session.add(new_task)
-            db.session.commit()
-            return redirect("/dashboard")
-        except Exception as e:
-            db.session.rollback()
-            return f"There was an error: {e}"
     return render_template("dashboard.html")
 
 @app.route("/add_task", methods=["POST", "GET"])
@@ -83,8 +73,10 @@ def add_task():
     if request.method == "POST":
         title = request.form.get("title")
         description = request.form.get("description")
+        due_date = request.form.get("due_date")
         try:
-            new_task = Task(title=title, description=description, user_id=current_user.id)
+            due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date() if due_date else None
+            new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj)
             db.session.add(new_task)
             db.session.commit()
             return redirect("/dashboard")
