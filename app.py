@@ -2,17 +2,26 @@ from flask import Flask, render_template, redirect, request
 from storage.database import db
 from models import task, user
 from models.user import create_user
-
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SECRET_KEY"] = "supersecretkey"
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 db.init_app(app)
 
 
 def create_tables():
     db.create_all() 
+
+@login_manager.user_loader
+def load_user(user_id):
+    return user.query.get(user_id)
 
 
 
@@ -26,7 +35,8 @@ def sign():
         email = request.form.get("email")
         password = request.form.get("password")
         try:
-            user.create_user(email=email, password=password)
+            hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+            user.create_user(email=email, password=hashed_password)
             db.session.commit()
             return redirect("/")
         except Exception as e:
@@ -36,7 +46,7 @@ def sign():
  
     return render_template("signup.html")
 
-@app.route("/login")
+@app.route("/login", methods=["POST", "GET"])
 def login():
     return render_template("login.html")
 
