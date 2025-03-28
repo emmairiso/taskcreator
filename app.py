@@ -86,20 +86,29 @@ def dashboard():
 
 @app.route("/add_task", methods=["POST", "GET"])
 def add_task():
-    #if request.method == "POST":
-        #title = request.form.get("title")
-        #description = request.form.get("description")
-        #due_date = request.form.get("due_date")
-        #try:
-            #due_date_obj = datetime.strptime(due_date, "%Y-%m-%d").date() if due_date else None
-            #new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj)
-            #db.session.add(new_task)
-            #db.session.commit()
-            #return redirect("/dashboard")
-        #except Exception as e:
-            #db.session.rollback()
-            #return f"There was an error: {e}"
     return render_template("add_task.html")
+
+@app.route("/delete_task", methods=["POST", "GET"])
+def delete_task():
+    if request.method == "POST":
+        # Handle the task deletion
+        task_id = request.form.get("task_id")
+        try:
+            # Query the task by ID and ensure it belongs to the current user
+            task_to_delete = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
+            if task_to_delete:
+                db.session.delete(task_to_delete)  # Delete the task
+                db.session.commit()
+                return redirect("/dashboard")  # Redirect back to the dashboard
+            else:
+                return "Task not found or you do not have permission to delete it.", 404
+        except Exception as e:
+            db.session.rollback()
+            return f"There was an error deleting the task: {e}"
+    else:
+        # Handle the GET request: Fetch tasks for the current user
+        user_tasks = Task.query.filter_by(user_id=current_user.id).all()
+        return render_template("delete_task.html", tasks=user_tasks)
 
 @app.after_request
 def add_header(response):
