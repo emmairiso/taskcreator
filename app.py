@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, flash
 from storage.database import db
 from models import task, user
 from models.user import User
@@ -6,7 +6,7 @@ from models.task import Task
 from models.user import create_user
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, date
 
 
 app = Flask(__name__)
@@ -40,6 +40,10 @@ def sign():
         email = request.form.get("email")
         password = request.form.get("password")
         try:
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash("User already exists. Log in.", "warning")
+                return redirect("/")
             hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
             user.create_user(email=email, password=hashed_password)
             db.session.commit()
@@ -80,8 +84,20 @@ def dashboard():
             except Exception as e:
                 db.session.rollback()
                 return f"There was an error: {e}"
+            
         user_tasks = Task.query.filter_by(user_id=current_user.id).all()
+        # Mark overdue tasks as completed
+        for task in user_tasks:
+            if task.is_overdue() and not task.completed:
+                task.completed = True
+                db.session.commit()
         return render_template("dashboard.html", tasks=user_tasks)
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
 
 
 @app.route("/add_task", methods=["POST", "GET"])
