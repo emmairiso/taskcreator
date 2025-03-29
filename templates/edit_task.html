@@ -7,15 +7,15 @@
 </head>
 
 <body>
-    <h1>Add Task</h1>
-    <form action="/dashboard", method="POST">
+    <h1>Edit Task</h1>
+    <form action="/edit_task/{{ task.id }}", method="POST">
         <label for="title">Task Title:</label><br>
-        <input type="text" id="title" name="title"><br>
+        <input type="text" id="title" name="title" value = "{{ task.title }}"><br>
         <label for="description">Task Description:</label><br>
-        <textarea id="description" name="description"></textarea><br>
-        <input type="submit" value="Add Task">
+        <textarea id="description" name="description">{{ task.description }}</textarea><br>
         <label for="due_date">Due Date:</label>
-        <input type="date" id="due_date" name="due_date" />
+        <input type="date" id="due_date" name="due_date" value ="{{ task.due_date }}" /><br>
+        <input type="submit" value="Save your changes">
         <br>
     </form>
     <a href="/dashboard">Back to Dashboard</a>

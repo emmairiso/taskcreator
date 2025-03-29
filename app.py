@@ -153,6 +153,22 @@ def delete_task():
         user_tasks = Task.query.filter_by(user_id=current_user.id).all()
         return render_template("delete_task.html", tasks=user_tasks)
     
+@app.route("/edit_task/<int:task_id>", methods=["POST", "GET"])
+def edit_task(task_id):
+        task = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
+        if not task:
+            return "Task not found or you do not have permission to edit it."
+        
+        if request.method == "POST":
+            task.title = request.form.get("title")
+            task.description = request.form.get("description")
+            due_date_str = request.form.get("due_date")
+            if due_date_str:
+                task.due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+            db.session.commit()
+            return redirect("/dashboard")
+        return render_template("edit_task.html", task=task)
+    
 scheduler = BackgroundScheduler()
 
 def schedule_task_reminders():

@@ -51,6 +51,9 @@
                         Not Completed
                     {% endif %}
                 </td>
+                <td>
+                    <a href="/edit_task/{{ task.id }}">Edit</a>
+                </td>
             </tr>
             {% endfor %}
         </table>
