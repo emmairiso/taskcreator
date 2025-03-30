@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Task</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
     <h1>Add Task</h1>
-    <form action="/dashboard", method="POST">
+    <form action="/dashboard" , method="POST">
         <label for="title">Task Title:</label><br>
         <input type="text" id="title" name="title"><br>
         <label for="description">Task Description:</label><br>
         <textarea id="description" name="description"></textarea><br>
-        <input type="submit" value="Add Task">
         <label for="due_date">Due Date:</label>
-        <input type="date" id="due_date" name="due_date" />
+        <input type="date" id="due_date" name="due_date" /><br><br>
+        <input type="submit" value="Add Task"><br>
         <br>
     </form>
     <a href="/dashboard">Back to Dashboard</a>
 </body>
+
 </html>
