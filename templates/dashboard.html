@@ -34,6 +34,7 @@
 
     {% if tasks %}
     <h2>Your Tasks</h2>
+    <div id="task-table">
     <table border="1">
         <tr>
             <th>Task</th>
@@ -54,11 +55,12 @@
                 {% endif %}
             </td>
             <td>
-                <a href="/edit_task/{{ task.id }}">Edit</a>
+                <a href="/edit_task/{{ task.id }}"><button>Edit</button></a>
             </td>
         </tr>
         {% endfor %}
     </table>
+</div>
     {% else %}
     <p>You have no tasks. <a href="/add_task">Add your first task!</a></p>
     {% endif %}

@@ -1,3 +1,9 @@
+body {
+
+    background-color: rgb(119, 207, 236)
+}
+
+
 .input-form-container {
     
     display:flex;
@@ -8,12 +14,17 @@
 }
 
 .input-form {
-    background-color: lightgray;
+    /*background-color: lightgray;
     border-radius: 10px;
     padding: 20px;
     width: 80vh;
     border-radius: 0px;
-
+    */
+    background-color: lightgray; /* Grey rectangle */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Inner spacing */
+    width: 400px; /* Fixed width for the form */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
 }
  
 .input-row {
@@ -22,6 +33,14 @@
     width: 75%;
     margin-top: 6px;
     
+}
+
+.form-buttons {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
 }
 
 p {
