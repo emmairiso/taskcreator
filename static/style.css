@@ -1,7 +1,25 @@
 body {
 
-    background-color: rgb(119, 207, 236)
+    background-color: rgb(223, 221, 221);
 }
+
+#home-page-container {
+    display: flex; /* Use Flexbox for alignment */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    min-height: 100vh; /* Full height of the viewport */
+    background-color: rgba(234, 230, 230, 0.175); /* Light grey background */
+    margin: 0; /* Remove default margin */
+}
+
+#home-page-body {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    text-align: center;
+    align-items: center;
+    gap: 20px
+}
+
 
 
 .input-form-container {
@@ -10,7 +28,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: rgb(119, 207, 236);
+    /*background-color: rgb(119, 207, 236);*/
 }
 
 .input-form {
@@ -27,6 +45,22 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
 }
  
+.input-form input[type="email"],
+.input-form input[type="password"],
+.input-form input[type="text"],
+.input-form input[type="date"],
+.input-form textarea {
+    width: 100%; /* Make input fields take up the full width of the container */
+    padding: 10px; /* Add inner spacing */
+    margin: 10px 0; /* Add spacing between inputs */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+    box-sizing: border-box; /* Include padding and border in the width calculation */
+    font-family: sans-serif; /* Use a clean font */
+}
+
+
+
 .input-row {
 
     float: left;
@@ -41,6 +75,42 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-top: 20px;
+}
+
+.task-table {
+    
+    width: 90%;
+    margin: 20px auto;
+    padding: 20px; /* Inner spacing */
+    border-radius: 10px; /* Rounded corners */
+    
+}
+
+.task-table table {
+    width: 100%;
+    border-collapse: collapse; /* Remove gaps between table cells */
+}
+
+.task-table th {
+    background-color: blue; /* Green header background */
+    color: white; /* White text for headers */
+    padding: 10px;
+    text-align: left;
+}
+
+.task-table td {
+    background-color: white; /* Explicit white background for table cells */
+    padding: 10px;
+    border: 1px solid #ddd; /* Light grey border */
+    text-align: left;
+}
+
+.task-table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Light grey background for even rows */
+}
+
+.task-table tr:hover {
+    background-color: #ddd; /* Highlight row on hover */
 }
 
 p {
