@@ -1,27 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar App</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
+{% block title %}Home Page{% endblock %}
 
-<title>Home Page</title>
-
-<body id="home-page-container">
-<div id="home-page-body">
+{% block content %}
+<div class="flex flex-col justify-center items-center gap-5 px-40 py-20 rounded-xl bg-stone-300 shadow-lg">
     <h1>This is the Calendar App!</h1><br>
-    <a href="signup">
-        <button>Sign up</button>
+    <a href="signup" class="w-full">
+        <button class="bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full" >Sign up</button>
     </a>
 
-    <a href="login">
-        <button>Log in</button>
+    <a href="login" class="w-full">
+        <button class="bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Log in</button>
     </a>
+
 </div>
-
-</body>
+{% endblock %}
 
 </html>

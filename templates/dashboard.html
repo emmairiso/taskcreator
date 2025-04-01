@@ -1,72 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %} {% block title %}Login Page{% endblock %} 
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .completed {
-            text-decoration: line-through;
-            color: gray;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>You are logged in! Welcome! </h1>
-    <p>Welcome, {{ current_user.email }}! You can:</p>
-    <a href="/add_task">
-        <button>Add Task</button><br>
-    </a>
-    <a href="">
-        <button>Edit Task</button><br>
-    </a>
-    <a href="/delete_task"><button>
-            Delete Task
-        </button></a><br>
-    <a href="/logout">
-        <button>Log out</button>
-    </a>
-
-
-
-    {% if tasks %}
+{% block body_class %}flex flex-col justify-center items-center h-screen bg-white{% endblock %}
+{% block content %}
+<div class="p-0 gap-5">
+    <h1>You are logged in! Welcome!</h1>
+    <p>Welcome, {{ current_user.email }}!</p>
     <h2>Your Tasks</h2>
+</div>
+
+
+<div class="flex">
+  <div class="flex flex-col gap-5 item-center justify-center">
+    <a href="/add_task"> <button class=" text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Add Task</button></a>
+    <a href="/delete_task"> <button class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Delete Task</button></a>
+    <a href="/logout">
+      <button class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Log out</button>
+    </a>
+  </div>
+
+  <div class="flex flex-col gap-5 item-center justify-center">
+    {% if tasks %}
     <div class="task-table">
-    <table border="1">
+      <table border="1">
         <tr>
-            <th>Task</th>
-            <th>Description</th>
-            <th>Due Date</th>
-            <th>Status</th>
+          <th>Task</th>
+          <th>Description</th>
+          <th>Due Date</th>
+          <th>Status</th>
         </tr>
         {% for task in tasks %}
         <tr>
-            <td>{{ task.title }}</td>
-            <td>{{ task.description }}</td>
-            <td>{{ task.due_date }}</td>
-            <td>
-                {% if task.completed %}
-                Completed
-                {% else %}
-                Not Completed
-                {% endif %}
-            </td>
-            <td>
-                <a href="/edit_task/{{ task.id }}"><button>Edit</button></a>
-            </td>
+          <td>{{ task.title }}</td>
+          <td>{{ task.description }}</td>
+          <td>{{ task.due_date }}</td>
+          <td>
+            {% if task.completed %} Completed {% else %} Not Completed {% endif
+            %}
+          </td>
+          <td>
+            <a href="/edit_task/{{ task.id }}"><button>Edit</button></a>
+          </td>
         </tr>
         {% endfor %}
-    </table>
-</div>
+      </table>
+    </div>
     {% else %}
     <p>You have no tasks. <a href="/add_task">Add your first task!</a></p>
     {% endif %}
+  </div>
+</div>
 
-
-
-</body>
-
-</html>
+{% endblock %}
