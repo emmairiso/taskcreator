@@ -43,7 +43,7 @@ def generate_verification_token(email):
     return s.dumps(email,salt='email-confirm')
 
 def confirm_verification_token(token):
-    email = s.loads(token, salt='email-confirm', max_age=3600)  # Token expires after 1 hour
+    return s.loads(token, salt='email-confirm', max_age=3600)  # Token expires after 1 hour
 
 def send_reminder_email(user_email, task_title, due_date):
     with app.app_context():
@@ -109,21 +109,21 @@ def sign():
 @app.route("/verify_email/<token>")
 def verify_email(token):
     try:
-        email = confirm_verification_token(token)
+        email = confirm_verification_token(token)  # Decode the token to get the email
         user = User.query.filter_by(email=email).first()
         if not user:
             flash("Invalid or expired token.", "error")
             return redirect("/signup")
 
-        # Mark the user as verified (you may need to add a `verified` column to your User model)
+        # Mark the user as verified
         user.verified = True
         db.session.commit()
 
         flash("Your email has been verified. You can now log in.", "success")
-        return redirect("/login")
+        return redirect("/login")  # Redirect to the login page after successful verification
     except Exception as e:
         flash(f"Verification failed: {e}", "error")
-        return redirect("/signup")
+        return redirect("/signup")  # Redirect to the signup page if verification fails
             
  
 
@@ -132,10 +132,11 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
+        verified = request.form.get("verified")
         current_user = User.query.filter_by(email=email).first()
 
         if current_user and check_password_hash(current_user.password, password):
-            if not user.verified:
+            if not current_user.verified:
                 flash("Please verify your email before logging in.", "warning")
                 return redirect("/login")
             login_user(current_user)
@@ -150,11 +151,17 @@ def dashboard():
             title = request.form.get("title")
             description = request.form.get("description")
             first_date = request.form.get("due_date")
-            reminder_time = request.form.get("reminder_time")
+            reminder_time_str = request.form.get("reminder_time")
 
             try:
                 due_date_obj = datetime.strptime(first_date, "%Y-%m-%d").date() if first_date else None
-                new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj, reminder_time=reminder_time)
+                reminder_time_obj = datetime.strptime(reminder_time_str, "%H:%M").time() if reminder_time_str else None
+                new_task = Task(title=title, 
+                                description=description, 
+                                user_id=current_user.id, 
+                                due_date=due_date_obj, 
+                                reminder_time=reminder_time_obj,
+                                )
                 db.session.add(new_task)
                 db.session.commit()
                 schedule_reminders_for_task(new_task)
@@ -223,9 +230,24 @@ def schedule_task_reminders():
         # Calculate the number of days until the due date
         days_until_due = (task.due_date - date.today()).days
 
-        # Schedule a daily email reminder until the due date
-        for day in range(days_until_due + 1):
-            reminder_time = time(22, 34)
+        # Use the reminder_time specified by the user, or default to a specific time if not set
+        reminder_time = task.reminder_time if task.reminder_time else time(9, 0)  # Default to 9:00 AM if not set
+
+        # Schedule a reminder for today if the time is still in the future
+        now = datetime.now()
+        today_reminder_datetime = datetime.combine(date.today(), reminder_time)
+        if today_reminder_datetime > now:  # Only schedule if the time is in the future
+            scheduler.add_job(
+                func=send_reminder_email,
+                args=[task.user.email, task.title, task.due_date],
+                trigger="date",
+                run_date=today_reminder_datetime,
+                id=f"reminder_{task.id}_today",
+                replace_existing=True
+            )
+
+        # Schedule reminders for future days
+        for day in range(1, days_until_due + 1):  # Start from tomorrow
             reminder_date = datetime.combine(date.today() + timedelta(days=day), reminder_time)
             scheduler.add_job(
                 func=send_reminder_email,
@@ -235,13 +257,29 @@ def schedule_task_reminders():
                 id=f"reminder_{task.id}_{day}",
                 replace_existing=True
             )
+
 def schedule_reminders_for_task(task):
     # Calculate the number of days until the due date
     days_until_due = (task.due_date - date.today()).days
 
-    # Schedule a daily email reminder until the due date
-    for day in range(days_until_due + 1):
-        reminder_time = time(22, 34)  # Set the time for the reminder (e.g., 10:07 PM)
+    # Use the reminder_time specified by the user, or default to a specific time if not set
+    reminder_time = task.reminder_time if task.reminder_time else time(9, 0)  # Default to 9:00 AM if not set
+
+    # Schedule a reminder for today if the time is still in the future
+    now = datetime.now()
+    today_reminder_datetime = datetime.combine(date.today(), reminder_time)
+    if today_reminder_datetime > now:  # Only schedule if the time is in the future
+        scheduler.add_job(
+            func=send_reminder_email,
+            args=[task.user.email, task.title, task.due_date],
+            trigger="date",
+            run_date=today_reminder_datetime,
+            id=f"reminder_{task.id}_today",
+            replace_existing=True
+        )
+
+    # Schedule reminders for future days
+    for day in range(1, days_until_due + 1):  # Start from tomorrow
         reminder_date = datetime.combine(date.today() + timedelta(days=day), reminder_time)
         scheduler.add_job(
             func=send_reminder_email,
@@ -262,9 +300,9 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
-
 if __name__ == "__main__":
     with app.app_context():
         create_tables()
         schedule_task_reminders()
     app.run(debug=True)
+
