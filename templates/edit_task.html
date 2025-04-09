@@ -4,10 +4,11 @@
 
 {% block content %}
     <div class="flex flex-col justify-center items-center gap-5 px-10 py-10 rounded-xl bg-stone-300 shadow-lg">
-        <h1>Edit Task</h1>
+        <h1>Edit Task</h1><br>
+
     <form action="/edit_task/{{ task.id }}" , method="POST" class="w-full">
         <label for="title">Task Title:</label><br>
-        <input type="text" id="title" name="title" value="{{ task.title }} w-full" ><br><br>
+        <input type="text" id="title" name="title" value="{{ task.title }}" ><br><br>
         <label for="description">Task Description:</label><br>
         <textarea id="description" name="description" class="w-full">{{ task.description }}</textarea><br><br>
         <label for="due_date">Due Date:</label>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, flash
+from flask import Flask, render_template, redirect, request, flash, url_for
 from storage.database import db
 from models import task, user
 from models.user import User
@@ -8,6 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta, time
 from flask_mail import Mail, Message
+from itsdangerous import URLSafeSerializer
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
@@ -30,12 +31,19 @@ app.config['MAIL_DEFAULT_SENDER'] = 'testerer261@gmail.com'
 
 mail = Mail(app)
 
+s = URLSafeSerializer(app.config["SECRET_KEY"])
 def create_tables():
     db.create_all() 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+def generate_verification_token(email):
+    return s.dumps(email,salt='email-confirm')
+
+def confirm_verification_token(token):
+    email = s.loads(token, salt='email-confirm', max_age=3600)  # Token expires after 1 hour
 
 def send_reminder_email(user_email, task_title, due_date):
     with app.app_context():
@@ -64,16 +72,60 @@ def sign():
             if existing_user:
                 flash("This user already exists. Log in instead.", "warning")
             else:
+                # Generate a verification token
+                token = generate_verification_token(email)
+                verify_url = url_for('verify_email', token=token, _external=True)
+                subject = "Please confirm your email"
+
+                # Email body
+                html = f"""
+                <p>Hi,</p>
+                <p>Thank you for signing up. Please click the link below to verify your email address:</p>
+                <p><a href="{verify_url}">{verify_url}</a></p>
+                <p>If you did not sign up, please ignore this email.</p>
+                """
+
+                 # Send the email
+                msg = Message(subject=subject,
+                              sender="testerer261@gmail.com",
+                              recipients=[email],
+                              html=html)
+                mail.send(msg)
+
+                # Create the user
                 hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
-                user.create_user(email=email, password=hashed_password)
+                new_user = User(email=email, password=hashed_password)
+                db.session.add(new_user)
                 db.session.commit()
-                return redirect("/")
+
+                flash("A verification email has been sent to your email address. Please check your inbox.", "info")
         except Exception as e:
             db.session.rollback()
-            flash(f"There was an error: {e}")
+            flash(f"There was an error: {e}", "error")
+    return render_template("signup.html")
+
+
+
+@app.route("/verify_email/<token>")
+def verify_email(token):
+    try:
+        email = confirm_verification_token(token)
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash("Invalid or expired token.", "error")
+            return redirect("/signup")
+
+        # Mark the user as verified (you may need to add a `verified` column to your User model)
+        user.verified = True
+        db.session.commit()
+
+        flash("Your email has been verified. You can now log in.", "success")
+        return redirect("/login")
+    except Exception as e:
+        flash(f"Verification failed: {e}", "error")
+        return redirect("/signup")
             
  
-    return render_template("signup.html")
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -83,6 +135,9 @@ def login():
         current_user = User.query.filter_by(email=email).first()
 
         if current_user and check_password_hash(current_user.password, password):
+            if not user.verified:
+                flash("Please verify your email before logging in.", "warning")
+                return redirect("/login")
             login_user(current_user)
             return redirect("/dashboard")
         else:
@@ -95,9 +150,11 @@ def dashboard():
             title = request.form.get("title")
             description = request.form.get("description")
             first_date = request.form.get("due_date")
+            reminder_time = request.form.get("reminder_time")
+
             try:
                 due_date_obj = datetime.strptime(first_date, "%Y-%m-%d").date() if first_date else None
-                new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj)
+                new_task = Task(title=title, description=description, user_id=current_user.id, due_date=due_date_obj, reminder_time=reminder_time)
                 db.session.add(new_task)
                 db.session.commit()
                 schedule_reminders_for_task(new_task)

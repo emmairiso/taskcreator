@@ -10,6 +10,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, nullable=False, unique=True)
     password = db.Column(db.String, nullable=False)
+    verified = db.Column(db.Boolean, default=False)
     tasks = relationship('Task', back_populates='user', cascade = "all, delete-orphan")
 
 def create_user(email, password):

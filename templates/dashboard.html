@@ -1,23 +1,32 @@
-{% extends "base.html" %} {% block title %}Dashboard{% endblock %} 
+{% extends "base.html" %} 
+
+{% block title %}Dashboard{% endblock %} 
 
 {% block body_class %}flex flex-col justify-center items-center h-screen bg-white{% endblock %}
 {% block content %}
 <div class="p-0 gap-5">
     <h1>You are logged in! Welcome!</h1>
     <p>Welcome, {{ current_user.email }}!</p>
-    <!-- <h2>Your Tasks</h2> -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }} text-red-500" ><br>{{ message }}</div><br>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 </div>
 
-
-  <div class="flex flex-col gap-5 item-center justify-center">
     {% if tasks %}
-    <h2>Your Tasks</h2>
+    <br><h1>Your Tasks</h1>
     <div class="flex">
       <div class="flex flex-col gap-5 item-center justify-center">
-        <a href="/add_task"> <button class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Add Task</button></a>
-        <a href="/delete_task"> <button class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Delete Task</button></a>
-        <a href="/logout">
-          <button class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white w-full">Log out</button>
+        <a href="/add_task" class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white inline-block whitespace-nowrap">
+          Add Task
+        </a>
+        <a href="/logout" class="text-white bg-gray-500 px-2 py-1 rounded hover:bg-slate-700 hover:text-white inline-block whitespace-nowrap">
+          Log out
         </a>
       </div>
 
@@ -38,7 +47,12 @@
             {% if task.completed %} Completed {% else %} Not Completed {% endif %}
           </td>
           <td>
-            <a href="/edit_task/{{ task.id }}"><button>Edit</button></a>
+            <a href="/edit_task/{{ task.id }}" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Edit</a>
+          </td>
+          <td>
+            <form action="/delete_task/{{ task.id }}  " method="POST" style="display: inline;">
+              <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
+          </form>
           </td>
         </tr>
         {% endfor %}
@@ -48,6 +62,5 @@
     <p class="px-10">You have no tasks. <a href="/add_task" class="text-blue-500 underline"> Add your first task!</a></p>
     {% endif %}
   </div>
-</div>
 
 {% endblock %}

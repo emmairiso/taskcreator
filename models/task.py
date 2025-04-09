@@ -11,6 +11,7 @@ class Task(db.Model):
     due_date = db.Column(db.Date, nullable=False)
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    reminder_time = db.Column(db.Time, nullable=True)
     user = relationship('User', back_populates='tasks')
 
     def is_overdue(self):
