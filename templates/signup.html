@@ -1,16 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+{% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign in to Calendar App</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-
-<body class="input-form-container">
 <div class="input-form">
-    <h2>Sign Up!</h2>
+    <h2>Sign Up!</h2><br>
+
+    <!-- Display flashed messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }} text-red-500" >{{ message }}</div><br>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
     <form action="/signup" method="POST" >
         <label for="email">Email</label><br>
         <input type="email" , id="email" name="email" placeholder="Enter email here..."><br><br>
@@ -23,6 +28,6 @@
     </form>
 </div>
 
-</body>
+{% endblock %}
 
 </html>

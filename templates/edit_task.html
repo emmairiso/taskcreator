@@ -1,26 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html"%}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Task</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
+{% block title %}Edit Task{% endblock %}
 
-<body>
-    <h1>Edit Task</h1>
-    <form action="/edit_task/{{ task.id }}" , method="POST">
+{% block content %}
+    <div class="flex flex-col justify-center items-center gap-5 px-10 py-10 rounded-xl bg-stone-300 shadow-lg">
+        <h1>Edit Task</h1>
+    <form action="/edit_task/{{ task.id }}" , method="POST" class="w-full">
         <label for="title">Task Title:</label><br>
-        <input type="text" id="title" name="title" value="{{ task.title }}"><br>
+        <input type="text" id="title" name="title" value="{{ task.title }} w-full" ><br><br>
         <label for="description">Task Description:</label><br>
-        <textarea id="description" name="description">{{ task.description }}</textarea><br>
+        <textarea id="description" name="description" class="w-full">{{ task.description }}</textarea><br><br>
         <label for="due_date">Due Date:</label>
-        <input type="date" id="due_date" name="due_date" value="{{ task.due_date }}" /><br>
-        <input type="submit" value="Save your changes">
-        <br>
+        <input type="date" id="due_date" name="due_date" value="{{ task.due_date }}" class="w-full" /><br><br>
+        <div class="flex justify-between items-center w-full mt-4 gap-x-4">
+            <a href="/dashboard" class="bg-gray-500 px-4 py-2 rounded hover:bg-slate-700 hover:text-white">
+                Back to Dashboard
+            </a>
+            <input type="submit" value="Save your changes" class="bg-gray-500 px-4 py-2 rounded hover:bg-slate-700 hover:text-white">
+        </div>
     </form>
-    <a href="/dashboard">Back to Dashboard</a>
-</body>
-
+</div>
+{% endblock %}
 </html>

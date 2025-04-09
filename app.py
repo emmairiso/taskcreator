@@ -62,12 +62,12 @@ def sign():
         try:
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
-                flash("User already exists. Log in.", "warning")
+                flash("This user already exists. Log in instead.", "warning")
+            else:
+                hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+                user.create_user(email=email, password=hashed_password)
+                db.session.commit()
                 return redirect("/")
-            hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
-            user.create_user(email=email, password=hashed_password)
-            db.session.commit()
-            return redirect("/")
         except Exception as e:
             db.session.rollback()
             return f"There was an error: {e}"
@@ -86,7 +86,7 @@ def login():
             login_user(current_user)
             return redirect("/dashboard")
         else:
-            return "Login failed"
+            flash("Login failed. Either the username or password is incorrect. Try again.", "warning")
     return render_template("login.html")
 
 @app.route("/dashboard", methods=["POST", "GET"])
