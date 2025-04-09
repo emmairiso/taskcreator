@@ -70,8 +70,8 @@ def sign():
                 return redirect("/")
         except Exception as e:
             db.session.rollback()
-            return f"There was an error: {e}"
-            return render_template("signup.html")
+            flash(f"There was an error: {e}")
+            
  
     return render_template("signup.html")
 
@@ -104,7 +104,7 @@ def dashboard():
                 return redirect("/dashboard")
             except Exception as e:
                 db.session.rollback()
-                return f"There was an error: {e}"
+                flash(f"There was an error: {e}")
             
             
         user_tasks = Task.query.filter_by(user_id=current_user.id).all()
@@ -126,38 +126,26 @@ def logout():
 def add_task():
     return render_template("add_task.html")
 
-@app.route("/delete_task", methods=["POST", "GET"])
-def delete_task():
-    if request.method == "POST":
-        # Handle the task deletion
-        task_id = request.form.get("task_id")
-        try:
-            # Query the task by ID and ensure it belongs to the current user
-            task_to_delete = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
-            if task_to_delete:
-                 # Remove scheduled jobs for the task
-                days_until_due = (task_to_delete.due_date - date.today()).days
-                for day in range(days_until_due + 1):
-                    job_id = f"reminder_{task_to_delete.id}_{day}"
-                    scheduler.remove_job(job_id)  # Remove the job from the scheduler
-                db.session.delete(task_to_delete)  # Delete the task
-                db.session.commit()
-                return redirect("/dashboard")  # Redirect back to the dashboard
-            else:
-                return "Task not found or you do not have permission to delete it.", 404
-        except Exception as e:
-            db.session.rollback()
-            return f"There was an error deleting the task: {e}"
-    else:
-        # Handle the GET request: Fetch tasks for the current user
-        user_tasks = Task.query.filter_by(user_id=current_user.id).all()
-        return render_template("delete_task.html", tasks=user_tasks)
+@app.route("/delete_task/<int:task_id>", methods=["POST", "GET"])
+def delete_task(task_id):
+    try:
+        task = Task.query.get(task_id)
+        if task:
+            db.session.delete(task)
+            db.session.commit()
+            flash("Task deleted successfully.", "success")
+        else:
+            flash("Task not found.", "error")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {e}", "error")
+    return redirect("/dashboard")
     
 @app.route("/edit_task/<int:task_id>", methods=["POST", "GET"])
 def edit_task(task_id):
         task = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
         if not task:
-            return "Task not found or you do not have permission to edit it."
+            flash("Task not found or you do not have permission to edit it.")
         
         if request.method == "POST":
             task.title = request.form.get("title")
