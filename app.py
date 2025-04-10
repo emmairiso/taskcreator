@@ -215,8 +215,11 @@ def edit_task(task_id):
             task.title = request.form.get("title")
             task.description = request.form.get("description")
             due_date_str = request.form.get("due_date")
+            reminder_time_str = request.form.get("reminder_time")
             if due_date_str:
                 task.due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+            if reminder_time_str:
+                task.reminder_time = datetime.strptime(reminder_time_str, "%H:%M").time()
             db.session.commit()
             return redirect("/dashboard")
         return render_template("edit_task.html", task=task)
